@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:genmodel="http://www.eclipse.org/emf/2002/GenModel"
+    modelDirectory="/hcl.uml/src-gen" creationIcons="false" editDirectory="/hcl.uml.edit/src-gen"
+    editorDirectory="/hcl.uml.editor/src-gen" modelPluginID="hcl.uml" modelName="Uml"
+    rootExtendsClass="org.eclipse.emf.ecore.impl.MinimalEObjectImpl$Container" codeFormatting="true"
+    importerID="org.eclipse.emf.importer.ecore" complianceLevel="5.0" copyrightFields="false"
+    operationReflection="true" importOrganizing="true">
+  <foreignModel>uml.ecore</foreignModel>
+  <testsDirectory xsi:nil="true"/>
+  <genPackages prefix="Uml" basePackage="hcl" disposableProviderFactory="true" ecorePackage="uml.ecore#/">
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="uml.ecore#//StorageType">
+      <genEnumLiterals ecoreEnumLiteral="uml.ecore#//StorageType/SSD"/>
+      <genEnumLiterals ecoreEnumLiteral="uml.ecore#//StorageType/HDD"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="uml.ecore#//CacheUnit">
+      <genEnumLiterals ecoreEnumLiteral="uml.ecore#//CacheUnit/KiB"/>
+      <genEnumLiterals ecoreEnumLiteral="uml.ecore#//CacheUnit/MiB"/>
+    </genEnums>
+    <genEnums typeSafeEnumCompatible="false" ecoreEnum="uml.ecore#//DisplayType">
+      <genEnumLiterals ecoreEnumLiteral="uml.ecore#//DisplayType/HD"/>
+      <genEnumLiterals ecoreEnumLiteral="uml.ecore#//DisplayType/Full-HD"/>
+      <genEnumLiterals ecoreEnumLiteral="uml.ecore#//DisplayType/4K"/>
+      <genEnumLiterals ecoreEnumLiteral="uml.ecore#//DisplayType/5K"/>
+    </genEnums>
+    <genClasses ecoreClass="uml.ecore#//HCL">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uml.ecore#//HCL/hasComp"/>
+    </genClasses>
+    <genClasses ecoreClass="uml.ecore#//Storage">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uml.ecore#//Storage/hasDisk"/>
+    </genClasses>
+    <genClasses ecoreClass="uml.ecore#//Processing">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uml.ecore#//Processing/hasL2"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uml.ecore#//Processing/hasL1"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uml.ecore#//Processing/hasL3"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//Processing/cores"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//Processing/speed"/>
+    </genClasses>
+    <genClasses ecoreClass="uml.ecore#//Display">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//Display/diagonal"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//Display/type"/>
+    </genClasses>
+    <genClasses ecoreClass="uml.ecore#//Disk">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//Disk/type"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//Disk/size"/>
+    </genClasses>
+    <genClasses ecoreClass="uml.ecore#//L2">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//L2/size"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//L2/unit"/>
+    </genClasses>
+    <genClasses ecoreClass="uml.ecore#//L1">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//L1/size"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//L1/unit"/>
+    </genClasses>
+    <genClasses ecoreClass="uml.ecore#//L3">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//L3/size"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//L3/unit"/>
+    </genClasses>
+    <genClasses ecoreClass="uml.ecore#//Computer">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//Computer/name"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uml.ecore#//Computer/hasProc"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uml.ecore#//Computer/hasDisp"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference uml.ecore#//Computer/hasStor"/>
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference uml.ecore#//Computer/conf"/>
+    </genClasses>
+    <genClasses image="false" ecoreClass="uml.ecore#//Configure">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute uml.ecore#//Configure/name"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

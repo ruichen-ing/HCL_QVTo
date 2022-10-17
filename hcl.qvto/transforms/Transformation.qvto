@@ -1,0 +1,245 @@
+modeltype UML uses 'http://www.example.org/uml';
+modeltype GRAPH uses 'http://dsldesign.tue.nl/graph';
+
+transformation Transformation(in uml : UML, out g : GRAPH);
+
+main() {
+	uml.rootObjects()[UML::HCL]->map hcl2graph();
+}
+
+mapping UML::HCL::hcl2graph() : GRAPH::Graph{
+	var comps := getComputers();
+ 	var speed_nodes : List(GRAPH::Node) := List{};
+ 	var diag_nodes : List(GRAPH::Node) := List{};
+ 	var speeds : Dict(String, Integer) := Dict{};
+ 	var diags : Dict(String, Integer) := Dict{};
+ 	var speed_proc_dict : Dict(Real, List(String)) := Dict{};
+ 	var diag_disp_dict : Dict(Integer, List(String)) := Dict{};
+ 	
+ 	comps->forEach(c){
+		c.hasProc->forEach(elem){
+			var name := elem.speed.toString() + " GHz";
+			// collect all processing speed nodes in a list
+			if(speeds->hasKey(name) = false){
+				speed_nodes->add(object GRAPH::Node {label := name; shape := Shape::BOX});
+				speeds->put(name, 1);	
+			};
+			// dictionary{processing speed, list[processing instance name]}
+			if (speed_proc_dict->hasKey(elem.speed) = true)
+			then
+				speed_proc_dict->get(elem.speed)->add(elem.name)
+			else
+				speed_proc_dict->put(elem.speed, List{elem.name})
+			endif
+		};
+		c.hasDisp->forEach(elem){
+			var name := elem.diagonal.toString() + " Inch";
+			// collect all display diagonal nodes in a list
+			if(diags->hasKey(name) = false){
+				diag_nodes->add(object GRAPH::Node {label := name; shape := Shape::BOX});
+				diags->put(name, 1);	
+			};
+			// dictionary{display diagonal, list[display instance name]}
+			if (diag_disp_dict->hasKey(elem.diagonal) = true)
+			then
+				diag_disp_dict->get(elem.diagonal)->add(elem.name)
+			else
+				diag_disp_dict->put(elem.diagonal, List{elem.name})
+			endif
+		};
+		
+		// lower part of the processing branch: instance node, core node, l1 node
+		c->hasProc->forEach(proc){
+			proc->forEach(p){
+				var core_node = object GRAPH::Node {label := p.cores.toString() + " cores"; shape := Shape::OVAL};
+				var l1_node = object GRAPH::Node {label := p.hasL1.size.toString() + " " + p.hasL1.unit.toString(); shape := Shape::OVAL};
+				nodes := nodes -> union(OrderedSet{core_node, l1_node});
+				var proc_inst_node = p -> map instProc2node(core_node, l1_node);
+				nodes := nodes -> union(proc_inst_node->asOrderedSet());
+			};
+		};
+		
+		// lower part of the display branch: instance node, type node
+		c->hasDisp->forEach(disp){
+			disp->forEach(d){
+				var type_node = object GRAPH::Node {label := d.type.toString(); shape := Shape::OVAL};
+				nodes := nodes -> union(OrderedSet{type_node});
+				var disp_inst_node = d -> map instDisp2node(type_node);
+				nodes := nodes -> union(disp_inst_node->asOrderedSet());
+			};
+		};
+ 	};
+ 	
+	// processing: speed node
+	nodes := nodes -> union(speed_nodes->asOrderedSet());
+		
+	// processing: CPU node
+	nodes := nodes -> union(self -> map initProc2node(speed_proc_dict, speed_nodes->asOrderedSet()));
+	
+	// processing: edge -> speed to instance
+	speed_nodes->forEach(node){
+		speed_proc_dict->keys()->forEach(key){
+			if(key.toString() + " GHz" = node.label){
+				var targetNames := speed_proc_dict->get(key);
+				targetNames->forEach(name){
+					g.rootObjects()[GRAPH::Graph].nodes -> forEach(n){
+						if(n.label = name){
+							node.outEdges := node.outEdges -> union(self -> map addEdge(n));
+						};
+					};
+				};
+			};
+		};
+	};
+	
+	// display: diagonal node
+	nodes := nodes -> union(diag_nodes->asOrderedSet());
+		
+	// display: Display node
+	nodes := nodes -> union(self -> map initDisp2node(diag_disp_dict, diag_nodes->asOrderedSet()));
+	
+	// display: edge -> diagonal to instance
+	diag_nodes->forEach(node){
+		diag_disp_dict->keys()->forEach(key){
+			if(key.toString() + " Inch" = node.label){
+				var targetNames := diag_disp_dict->get(key);
+				targetNames->forEach(name){
+					g.rootObjects()[GRAPH::Graph].nodes -> forEach(n){
+						if(n.label = name){
+							node.outEdges := node.outEdges -> union(self -> map addEdge(n));
+						};
+					};
+				};
+			};
+		};
+	};
+ 	
+ 	// add edges between root computer node and processing/display instance nodes
+	comps->forEach(c){
+		// dictionary{speed : List[name]}
+		var speed_proc_subdict : Dict(Real, List(String)) := Dict{};
+		c.hasProc->forEach(elem){
+			if (speed_proc_subdict->hasKey(elem.speed) = true)
+			then
+				speed_proc_subdict->get(elem.speed)->add(elem.name)
+			else
+				speed_proc_subdict->put(elem.speed, List{elem.name})
+			endif	
+		};
+		
+		// dictionary{diagonal : List[name]}
+		var diag_disp_subdict : Dict(Integer, List(String)) := Dict{};	
+		c.hasDisp->forEach(elem){
+			if (diag_disp_subdict->hasKey(elem.diagonal) = true)
+			then
+				diag_disp_subdict->get(elem.diagonal)->add(elem.name)
+			else
+				diag_disp_subdict->put(elem.diagonal, List{elem.name})
+			endif
+		};
+		
+		// root edges: computer node to CPU instances and to display instances
+		nodes := nodes -> union(c -> map root2node(speed_proc_subdict->values()->flatten(), diag_disp_subdict->values()->flatten()));
+	};
+	name := "HCL_Graph";
+}
+
+// convert processing instance to node
+mapping UML::Processing::instProc2node(core_node : GRAPH::Node, l1_node : GRAPH::Node) : GRAPH::Node{
+	label := self.name;
+	shape := Shape::BOX;
+	outEdges := self -> instCoreEdge(core_node) -> union(self -> instL1Edge(l1_node))
+}
+
+// add edges between processing instance node and processing core node 
+mapping UML::Processing::instCoreEdge(core_node : GRAPH::Node) : GRAPH::Edge{
+	// find the constructed core node, add target
+	g.rootObjects()[GRAPH::Graph].nodes -> forEach(node){
+		if(self.cores.toString() + " cores" = node.label){
+			style := Style::DASHED;
+			target := core_node;
+		}
+	};
+}
+
+// add edges between processing instance node and processing l1 cache node
+mapping UML::Processing::instL1Edge(l1_node : GRAPH::Node) : GRAPH::Edge{
+	// find the constructed l1 processing node, add target 
+	g.rootObjects()[GRAPH::Graph].nodes -> forEach(node){
+		if(self.hasL1.size.toString() + " " + self.hasL1.unit.toString() = node.label){
+			style := Style::DASHED;
+			target := l1_node;
+		}
+	};
+}
+
+// construct CPU node
+mapping UML::HCL::initProc2node(dict : Dict(Real, List(String)), key_nodes : OrderedSet(GRAPH::Node)) : GRAPH::Node{	
+	label := 'CPU';
+	var edges : OrderedSet(GRAPH::Edge) := OrderedSet{}; 
+	key_nodes->forEach(node){
+		outEdges := outEdges -> union(self -> map addEdge(node));
+	};
+}
+
+// add edges between CPU nodes and processing speed nodes
+mapping UML::HCL::addEdge(node : GRAPH::Node) : GRAPH::Edge{
+	style := Style::SOLID;
+	target := node;
+}
+
+// add edges between root computer nodes and processing instance or display instance nodes
+mapping UML::Computer::rootEdge(node : GRAPH::Node) : GRAPH::Edge{
+	style := Style::SOLID;
+	target := node;
+}
+
+// convert display instance to node
+mapping UML::Display::instDisp2node(type_node : GRAPH::Node) : GRAPH::Node{
+	label := self.name;
+	shape := Shape::BOX;
+	outEdges := self -> instTypeEdge(type_node)
+}
+
+// add edges between display instance node and display type node 
+mapping UML::Display::instTypeEdge(type_node : GRAPH::Node) : GRAPH::Edge{
+	g.rootObjects()[GRAPH::Graph].nodes -> forEach(node){
+		if(self.type.toString() = node.label){
+			style := Style::DASHED;
+			target := type_node;
+		}
+	};
+}
+
+// construct Display node
+mapping UML::HCL::initDisp2node(dict : Dict(Integer, List(String)), diag_nodes : OrderedSet(GRAPH::Node)) : GRAPH::Node{
+	label := 'Display';
+	var edges : OrderedSet(GRAPH::Edge) := OrderedSet{}; 
+	diag_nodes->forEach(node){
+		outEdges := outEdges -> union(self -> map addEdge(node));
+	};
+}
+
+// construct root computer nodes
+mapping UML::Computer::root2node(proc_names : List(String), disp_names: List(String)) : GRAPH::Node{
+	label := self.name;
+	proc_names->forEach(name){
+		g.rootObjects()[GRAPH::Graph].nodes -> forEach(node){
+			if(node.label = name){		
+				outEdges := outEdges -> union(self -> map rootEdge(node));	
+			};
+		};
+	};
+	disp_names->forEach(name){
+		g.rootObjects()[GRAPH::Graph].nodes -> forEach(node){
+			if(node.label = name){	
+				outEdges := outEdges -> union(self -> map rootEdge(node));	
+			};	
+		};
+	};
+}
+
+// Get all computer instences in a sequence
+query getComputers(): Sequence(UML::Computer){
+	return UML::Computer.allInstances()->asSequence()
+}

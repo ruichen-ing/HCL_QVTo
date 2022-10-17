@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uml:HCL xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:uml="http://www.example.org/uml"
+    xsi:schemaLocation="http://www.example.org/uml uml.ecore">
+  <hasComp name="computer_1"
+      conf="//@hasComp.0/@hasDisp.0 //@hasComp.0/@hasStor.0">
+    <hasProc
+        name="CPU_1_1"
+        cores="4"
+        speed="2.0">
+      <hasL2
+          size="4"
+          unit="MiB"/>
+      <hasL1
+          size="64"/>
+      <hasL3
+          size="15"
+          unit="MiB"/>
+    </hasProc>
+    <hasProc
+        name="CPU_1_2"
+        cores="16"
+        speed="2.0">
+      <hasL2
+          size="128"/>
+      <hasL1
+          size="256"
+          unit="MiB"/>
+      <hasL3
+          size="1024"/>
+    </hasProc>
+    <hasProc
+        name="CPU_1_3"
+        cores="8"
+        speed="5.6">
+      <hasL2
+          size="16"/>
+      <hasL1
+          size="16"/>
+      <hasL3
+          size="16"
+          unit="MiB"/>
+    </hasProc>
+    <hasDisp
+        name="display_1_1"
+        diagonal="30"
+        type="5K"/>
+    <hasDisp
+        name="display_1_2"
+        diagonal="30"/>
+    <hasDisp
+        name="display_1_3"
+        diagonal="29"
+        type="Full-HD"/>
+    <hasStor
+        name="storage_1_1">
+      <hasDisk
+          size="512"/>
+    </hasStor>
+  </hasComp>
+  <hasComp name="computer_2"
+      conf="//@hasComp.0/@hasDisp.0 //@hasComp.0/@hasStor.0">
+    <hasProc
+        name="proc_2_1"
+        cores="32"
+        speed="3.0">
+      <hasL2
+          size="1"/>
+      <hasL1
+          size="1"/>
+      <hasL3
+          size="1"/>
+    </hasProc>
+    <hasDisp
+        name="disp_2_1"
+        diagonal="30"/>
+    <hasStor
+        name="stor_2_1">
+      <hasDisk
+          size="1024"/>
+    </hasStor>
+  </hasComp>
+</uml:HCL>
